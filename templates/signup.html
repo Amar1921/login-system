@@ -1,0 +1,39 @@
+{%include "__navbar.html" %}
+<div class="container">
+    <div class="row d-flex justify-content-center mt-5">
+        <div class="col-sm-8 d-flex justify-content-center">
+            <div class="row d-flex justify-content-center">
+                <p class="text-center text-danger">{% if message %} {{message}} {% endif%}
+                </p>
+                <form class="border shadow formulaire" action="/signup" method="post">
+                    <div class="col-sm-12 my-3">
+                        <label class="text-start " for="email">Email
+                            <input name="email" type="text" id="email" class="form-control input-form"
+                                   placeholder="Votre email">
+                        </label>
+                    </div>
+                    <div class="col-sm-12 my-3">
+                        <label class="text-start " for="password">Password
+                            <input name="password" type="password" id="password" class="form-control input-form"
+                                   placeholder="Password">
+                        </label>
+                    </div>
+                    <div class="col-sm-12 my-3">
+                        <label class="text-start " for="passwordCf">Confirmation password
+                            <input name="passwordCf" type="password" id="passwordCf"
+                                   class="form-control input-form" placeholder="Password confirm">
+                        </label>
+                    </div>
+                    <div class="col-sm-12 my-3">
+                        <button class="btn btn-outline-dark ">Signup</button>
+                    </div>
+                    <div class="col-sm-12 p-2 text-end">
+                        <small>Dèja inscrit! <a href="/login">S'identifier</a></small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%include "__footer.html" %}

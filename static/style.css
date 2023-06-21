@@ -1,0 +1,27 @@
+.formulaire{
+
+min-width: 500px;
+display: flex;
+justify-content: center;
+flex-direction: column;
+justify-content: center;
+text-align: center;
+border-radius: 10px;
+
+}
+
+.input-form{
+}
+
+footer{
+position: absolute;
+bottom : 0 ;
+left: 40%
+}
+a{
+color: #808080;
+text-decoration: none
+}
+a:hover{
+color: #fff343
+}
