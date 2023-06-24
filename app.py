@@ -5,33 +5,59 @@ from mysql import connector
 
 app = Flask(__name__)
 app.secret_key = "As78-@Lx^-kpe9!y"
+users_connected = []
+
 
 # Initialisation de la base de donnees
-db = connector.connect(
-    user='root',
-    password='root',
-    database='users',
-    host='127.0.0.1',
-    port=8889
-)
+class Connexion:
+    db = connector.connect(
+        user='root',
+        password='root',
+        database='users',
+        host='127.0.0.1',
+        port=8889
+    )
+
+    def getUser(self, email):
+        ma_bd = self.db.cursor()
+        req = "SELECT * FROM user WHERE email=%s"
+        ma_bd.execute(req, [email])
+        return ma_bd.fetchall()
+
+    def addUser(self, email, password):
+        ma_bd = self.db.cursor()
+        req = "INSERT INTO user(email, password) VALUES (%s, %s)"
+        params = (email, password)
+        ma_bd.execute(req, params)
+        self.db.commit()
+        ma_bd.close()
 
 
-@app.route('/')
+# Initialisation de la class Connect
+connexion = Connexion()
+
+
+# Route vers la page d'accueil
+@app.route('/', methods=['GET'])
 def home():
     if 'user' in session:
-        email = session['user']
-        return render_template('base.html', user=email)
-    else:
-        return render_template('login.html')
+        user = session['user']
+        users_connected.append(user)
+        if 'anonyme' in users_connected:
+            users_connected.remove('anonyme')
+        return render_template('base.html', user=user, deconnecter=True,
+                               users=users_connected)
+
+    return render_template('base.html')
 
 
+# Route vers la page login
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     # Si deja une session
     if 'user' in session:
         # email = session['user']
-        return redirect('/')
-
+        return render_template('base.html', user=session['user'])
     elif request.method == 'POST' and 'email' in request.form and 'password' in request.form:
         try:
 
@@ -39,12 +65,14 @@ def login():
             password = request.form['password']
             password = password.encode('utf-8')
             # Verifier si le compte existe deja
-            ma_bdd = db.cursor(prepared=True)
-            req = "SELECT * FROM user WHERE email=%s"
-            ma_bdd.execute(req, [email])
-            result = ma_bdd.fetchall()
-            ma_bdd.close()
-
+            # ma_bdd = connexion.db.cursor(prepared=True)
+            # req = "SELECT * FROM user WHERE email=%s"
+            # ma_bdd.execute(req, [email])
+            # result = ma_bdd.fetchall()
+            # ma_bdd.close()
+            # connexion.db.commit()
+            # connexion.db.close()
+            result = connexion.getUser(email)
             email2 = ""
             passwordHash = ""
             # Si le compte existe !
@@ -57,7 +85,10 @@ def login():
                 if email2 is not None and bcrypt.checkpw(password, passwordHash):
                     print("Les mots de passe correspondent")
                     session['user'] = email
-                    return render_template('base.html')
+                    # users_connected.append(email)
+                    return render_template('login.html',
+                                           login=True,
+                                           user=email)
                 else:
                     message = "Mot de passe incorrecte"
                     return render_template('login.html',
@@ -68,11 +99,11 @@ def login():
 
             return render_template('login.html',
                                    error=message)
+    else:
+        return render_template('login.html')
 
-    return render_template('login.html')
 
-
-#
+# Route vers la page d'inscription
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
     # Effacer la session en cours.
@@ -82,13 +113,9 @@ def signup():
         try:
             # Verifier si le format de l'email est valide
             email = validate_email(email).email
+            resultat = connexion.getUser(email)
 
-            ma_bdd = db.cursor(prepared=True)
-            req = "SELECT * FROM user WHERE email=%s"
-            ma_bdd.execute(req, [email])
-            resultat = ma_bdd.fetchall()
-            ma_bdd.close()
-            # Si resultat est True
+            # Si resultat est vrai
             if resultat:
                 print("***********2***************")
                 erreur = "Ce utilisateur existe deja !!"
@@ -100,18 +127,11 @@ def signup():
                 passwordCf = request.form['passwordCf']
                 # Verifier si les mots de passe sont conformes et != null
                 if password == passwordCf and password != "":
-                    ma_bdd = db.cursor(prepared=True)
+
                     password = password.encode('utf-8')
                     # Crypter le mot de passe
                     hased = bcrypt.hashpw(password, bcrypt.gensalt())
-
-                    req = "INSERT INTO user (email, password) VALUES (%s, %s);"
-                    # req = req.format(email, hased)
-                    params = [(email, hased)]
-                    ma_bdd.executemany(req, params)
-                    # print(res)
-                    db.commit()
-                    ma_bdd.close()
+                    connexion.addUser(email, hased)
                     return render_template('login.html',
                                            title="login")
                 else:
@@ -135,6 +155,7 @@ def logout():
     # Supprimer le nom d'utilisateur de la session
     session.pop('user', None)
     session.clear()
+    users_connected.clear()
     return redirect('/')
 
 

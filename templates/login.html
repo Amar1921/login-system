@@ -1,4 +1,11 @@
 {%include "__navbar.html" %}
+{% if login %}
+<h2 class="text-center">
+    {% if user %}
+    <a class="btn btn-outline-dark mt-4" href="/">Home</a>
+    {% endif %}
+</h2>
+{% else %}
 <div class="container">
     <div class="row d-flex justify-content-center mt-5">
         <div class="col-sm-8 d-flex justify-content-center">
@@ -26,6 +33,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {%include "__footer.html" %}
 
 

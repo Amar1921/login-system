@@ -3,10 +3,16 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
-            <h2 class="text-center">
-                Bienvenue {{session.user}}
 
-            </h2>
+            {% if user %}
+            {% for user in users %}
+            <h2>Bonjour {{user}}</h2>
+            {% endfor %}
+            {% else %}
+            <h2 class="mt-5">Bonjour utilisateur anonyme</h2>
+            {% endif %}
+        </div>
+        <div class="col-12">
 
         </div>
     </div>
